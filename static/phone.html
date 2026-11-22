@@ -384,7 +384,7 @@
 
     <!-- Hidden connection config -->
     <input type="hidden" id="laptopIpInput" value="">
-    <input type="hidden" id="laptopPortInput" value="8000">
+    <input type="hidden" id="laptopPortInput" value="">
     <input type="hidden" id="pairingTokenInput" value="">
 
     <!-- ===================================================================
@@ -558,11 +558,13 @@
 
     function getApiBaseUrl() {
       if (window.location && window.location.origin && window.location.origin !== "null" && window.location.origin.startsWith("http")) {
-        return window.location.origin;
+        return window.location.origin.replace(/\/$/, "");
       }
       const host = (document.getElementById('laptopIpInput') && document.getElementById('laptopIpInput').value) || window.location.hostname || "127.0.0.1";
-      const port = (document.getElementById('laptopPortInput') && document.getElementById('laptopPortInput').value) || window.location.port || "8000";
-      return `http://${host}:${port}`;
+      const port = (document.getElementById('laptopPortInput') && document.getElementById('laptopPortInput').value) || window.location.port;
+      const portPart = (port && port !== "80" && port !== "443") ? `:${port}` : "";
+      const proto = (window.location && window.location.protocol === 'https:') ? 'https:' : 'http:';
+      return `${proto}//${host}${portPart}`;
     }
 
     function parseUrlParams() {
@@ -573,14 +575,15 @@
         document.getElementById('pairingTokenInput').value = pairingToken;
       }
       document.getElementById('laptopIpInput').value = window.location.hostname || "127.0.0.1";
-      document.getElementById('laptopPortInput').value = window.location.port || "8000";
+      document.getElementById('laptopPortInput').value = window.location.port || (window.location.protocol === 'https:' ? "" : "8000");
     }
 
     function initWebSocket() {
       const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       const host = window.location.hostname || (document.getElementById('laptopIpInput') && document.getElementById('laptopIpInput').value) || "127.0.0.1";
-      const port = window.location.port || (document.getElementById('laptopPortInput') && document.getElementById('laptopPortInput').value) || "8000";
-      const wsUrl = `${proto}//${host}:${port}/ws/telemetry`;
+      const port = window.location.port || (document.getElementById('laptopPortInput') && document.getElementById('laptopPortInput').value);
+      const portPart = (port && port !== "80" && port !== "443") ? `:${port}` : "";
+      const wsUrl = `${proto}//${host}${portPart}/ws/telemetry`;
 
       if (ws) {
         try { ws.close(); } catch(e){}
@@ -1080,8 +1083,6 @@
       btn.disabled = true;
       btn.textContent = "Encrypting on Phone & Transmitting...";
 
-      const host = document.getElementById('laptopIpInput').value || window.location.hostname || "127.0.0.1";
-      const port = document.getElementById('laptopPortInput').value || "8000";
       const algo = document.getElementById('phoneAlgoSelect').value;
       const transportMode = document.getElementById('phoneTransportSelect').value;
 

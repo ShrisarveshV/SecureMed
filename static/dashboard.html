@@ -2996,7 +2996,9 @@
     // WEBSOCKET FOR DASHBOARD SYNCHRONIZATION
     function initDashboardWebSocket() {
       const loc = window.location;
-      const wsUrl = `ws://${loc.hostname}:${loc.port || 8000}/ws/telemetry`;
+      const proto = loc.protocol === 'https:' ? 'wss:' : 'ws:';
+      const portPart = (loc.port && loc.port !== "80" && loc.port !== "443") ? `:${loc.port}` : "";
+      const wsUrl = `${proto}//${loc.hostname}${portPart}/ws/telemetry`;
       ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {

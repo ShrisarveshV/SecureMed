@@ -22,7 +22,7 @@ from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional, Set
 
 import qrcode
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, UploadFile, File, Form, Request
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -194,16 +194,31 @@ class ReplayTestRequest(BaseModel):
 # --- 1. CONNECTIVITY & DEVICE MANAGEMENT APIS ---
 
 @app.get("/api/network_info")
-def get_network_info():
+def get_network_info(request: Request):
     """Returns connectivity details, pairing credentials, and QR code."""
-    ip = get_local_ip()
-    port = 8000
-    phone_url = f"http://{ip}:{port}/phone?session_id={state.session_id}&token={state.pairing_token}&algo={state.algorithm}"
+    external_url = os.environ.get("RENDER_EXTERNAL_URL")
+    if not external_url:
+        f_proto = request.headers.get("x-forwarded-proto") or request.url.scheme or "http"
+        f_host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+        if f_host and not any(h in f_host for h in ("localhost", "127.0.0.1", "0.0.0.0")):
+            external_url = f"{f_proto}://{f_host}".rstrip("/")
+
+    if external_url:
+        phone_url = f"{external_url}/phone?session_id={state.session_id}&token={state.pairing_token}&algo={state.algorithm}"
+        display_ip = external_url
+        display_port = 443 if external_url.startswith("https") else 80
+    else:
+        ip = get_local_ip()
+        port = int(os.environ.get("PORT", 8000))
+        phone_url = f"http://{ip}:{port}/phone?session_id={state.session_id}&token={state.pairing_token}&algo={state.algorithm}"
+        display_ip = ip
+        display_port = port
+
     qr_b64 = generate_qr_base64(phone_url)
 
     return {
-        "local_ip": ip,
-        "port": port,
+        "local_ip": display_ip,
+        "port": display_port,
         "phone_url": phone_url,
         "pairing_pin": state.pairing_pin,
         "pairing_token": state.pairing_token,

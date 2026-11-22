@@ -1,5 +1,9 @@
 # SecureMed — Medical Device Cryptographic Communication Simulator
 
+[![CI Status](https://github.com/ShrisarveshV/SecureMed/actions/workflows/ci.yml/badge.svg)](https://github.com/ShrisarveshV/SecureMed/actions/workflows/ci.yml)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/ShrisarveshV/SecureMed)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/ShrisarveshV/SecureMed)
+
 SecureMed is an educational cybersecurity research simulator demonstrating authenticated cryptographic telemetry transmission between simulated implantable medical devices (such as pacemakers, ICDs, continuous glucose monitors, and wearable ECG monitors) and a monitoring receiver laptop.
 
 > **EDUCATIONAL RESEARCH DISCLAIMER**: SecureMed is strictly a software cybersecurity research simulator operating on synthetic telemetry. It does **not** connect to real clinical devices, issue real medical stimulation commands, or use real patient health data.

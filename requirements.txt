@@ -1,0 +1,23 @@
+# SecureMed — Medical Device Cryptographic Communication Simulator
+# Dependencies manifest
+
+# Core Cryptographic Libraries
+cryptography>=42.0.0
+ascon>=0.0.9
+kyber-py>=1.2.0
+
+# Backend Web Receiver & WebSockets
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+pydantic>=2.0.0
+websockets>=12.0
+requests>=2.31.0
+python-multipart>=0.0.7
+
+# QR Code Generation (Out-of-band Optical Bootstrap)
+qrcode>=7.4.2
+pillow>=10.0.0
+
+# Bluetooth Low Energy & Host Diagnostics
+bleak>=0.21.0
+psutil>=5.9.0

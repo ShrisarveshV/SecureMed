@@ -1,0 +1,80 @@
+name: SecureMed CI & Automated Cryptographic Verification
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-verify:
+    name: Test & Verify (${{ matrix.os }}, Python ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, windows-latest ]
+        python-version: [ "3.11", "3.12", "3.13" ]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pytest
+
+      - name: Run automated test suite (pytest)
+        run: |
+          python -m pytest -v --tb=short
+
+      - name: Run empirical security validation suite (12 tests)
+        run: |
+          python crypto_engine/security_validation.py
+
+      - name: Run cryptographic benchmark suite
+        run: |
+          python crypto_engine/benchmark.py
+
+  server-smoke-test:
+    name: Receiver Server & API Smoke Test
+    needs: test-and-verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Verify application startup & endpoints
+        run: |
+          python -c "
+          from receiver.receiver_service import app
+          routes = [r.path for r in app.routes]
+          print(f'Total registered routes: {len(routes)}')
+          assert '/' in routes
+          assert '/phone' in routes
+          assert '/api/session_info' in routes
+          assert '/api/process_packet' in routes
+          print('All primary endpoints verified successfully!')
+          "

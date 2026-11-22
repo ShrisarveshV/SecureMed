@@ -36,7 +36,7 @@ def get_local_ip() -> str:
 
 if __name__ == "__main__":
     local_ip = get_local_ip()
-    port = 8000
+    port = int(os.environ.get("PORT", 8000))
     print("=" * 72)
     print("  [+] SECUREMED: MEDICAL CRYPTOGRAPHIC RECEIVER & RESEARCH DASHBOARD")
     print("=" * 72)
